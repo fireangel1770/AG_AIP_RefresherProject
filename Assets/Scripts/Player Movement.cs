@@ -15,6 +15,7 @@ public class PlayerMovement : MonoBehaviour
     Rigidbody rb;
     Ray ray;
     [SerializeField] Animator animator;
+    [SerializeField] Transform playerTransform;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -26,13 +27,27 @@ public class PlayerMovement : MonoBehaviour
     {
         animator.SetBool("isRunning", movementVector.magnitude > 0);
         transform.forward = movementVector.normalized;
+        OnGround();
     }
-
+    public void OnGround()
+    {
+        if (Physics.Raycast(playerTransform.position, Vector3.down, 2))
+        {
+            if(tag == "Ground")
+            {
+                animator.SetBool("onGround", movementVector.magnitude > 0);
+            }
+            else
+            {
+                animator.SetBool("onGround", movementVector.magnitude < 0);
+            }
+        }
+    }
     public void OnJump(InputAction.CallbackContext ctx)
     {
+        animator.SetBool("isJump", movementVector.magnitude > 0);
         if(ctx.performed)
             rb.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
-        animator.SetBool("isJump", movementVector.magnitude > 0);
     }
 
     public void OnMove(InputAction.CallbackContext ctx)
