@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+
 public class PlayerMovement : MonoBehaviour
 {
     // Movement values
@@ -10,12 +11,14 @@ public class PlayerMovement : MonoBehaviour
 
     // variables
     Vector3 movementVector;
+    bool grounded = true;
 
     // references
     Rigidbody rb;
-    Ray ray;
+    Ray hit;
     [SerializeField] Animator animator;
     [SerializeField] Transform playerTransform;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -25,27 +28,29 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        OnGround();
         animator.SetBool("isRunning", movementVector.magnitude > 0);
         transform.forward = movementVector.normalized;
-        OnGround();
     }
     public void OnGround()
     {
-        if (Physics.Raycast(playerTransform.position, Vector3.down, 2))
-        {
-            if(tag == "Ground")
+        if (Physics.Raycast(playerTransform.position + (Vector3.down / 2), Vector3.down, 1))
+            if (tag == "Ground")
             {
-                animator.SetBool("onGround", movementVector.magnitude > 0);
+                Debug.DrawRay(playerTransform.position + (Vector3.down/2), Vector3.down, Color.green, 1);
+                grounded = true;
+                animator.SetBool("onGround", grounded);
             }
-            else
+            if(tag != "Ground")
             {
-                animator.SetBool("onGround", movementVector.magnitude < 0);
+                Debug.DrawRay(playerTransform.position + (Vector3.down/2), Vector3.down, Color.red, 1);
+                grounded = false;
+                animator.SetBool("onGround", grounded);
             }
-        }
     }
     public void OnJump(InputAction.CallbackContext ctx)
     {
-        animator.SetBool("isJump", movementVector.magnitude > 0);
+        animator.SetTrigger("isJump");
         if(ctx.performed)
             rb.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
     }
