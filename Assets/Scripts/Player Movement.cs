@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-
+using UnityEngine.Events;
 
 public class PlayerMovement : MonoBehaviour
 {
@@ -13,9 +13,12 @@ public class PlayerMovement : MonoBehaviour
     Vector3 movementVector;
     bool grounded = true;
 
+    [SerializeField] UnityEvent OnJumped;
+    [SerializeField] UnityEvent DoorEnter;
+    [SerializeField] UnityEvent DoorExit;
     // references
     Rigidbody rb;
-    Ray hit;
+    [SerializeField] HealthSO Health;
     [SerializeField] Animator animator;
     [SerializeField] Transform playerTransform;
 
@@ -34,19 +37,23 @@ public class PlayerMovement : MonoBehaviour
     }
     public void OnGround()
     {
-        if (Physics.Raycast(playerTransform.position + (Vector3.down / 2), Vector3.down, 1))
-            if (tag == "Ground")
+        RaycastHit hit;
+        if (Physics.Raycast(playerTransform.position + (Vector3.down), Vector3.down, out hit, 1))
+        {
+            if (hit.transform.gameObject.tag == "Ground")
             {
-                Debug.DrawRay(playerTransform.position + (Vector3.down/2), Vector3.down, Color.green, 1);
+                Debug.DrawRay(playerTransform.position + (Vector3.down), Vector3.down, Color.green, 1);
                 grounded = true;
                 animator.SetBool("onGround", grounded);
             }
-            if(tag != "Ground")
+            else //if (hit.transform.gameObject.tag != "Ground")
             {
-                Debug.DrawRay(playerTransform.position + (Vector3.down/2), Vector3.down, Color.red, 1);
+                Debug.DrawRay(playerTransform.position + (Vector3.down), Vector3.down, Color.red, 1);
                 grounded = false;
                 animator.SetBool("onGround", grounded);
             }
+
+        }
     }
     public void OnJump(InputAction.CallbackContext ctx)
     {
@@ -65,5 +72,26 @@ public class PlayerMovement : MonoBehaviour
     {
         rb.AddForce(movementVector * moveSpeed, ForceMode.Acceleration);
     }
-
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other != null)
+        {
+            int Layer = LayerMask.NameToLayer("Door");
+            if (other.gameObject.layer == Layer)
+            {
+                DoorEnter?.Invoke();
+            }
+        }
+    }
+    private void OnTriggerExit(Collider other)
+    {
+        if (other != null)
+        {
+            int Layer = LayerMask.NameToLayer("Door");
+            if (other.gameObject.layer == Layer)
+            {
+                DoorExit?.Invoke();
+            }
+        }
+    }
 }
