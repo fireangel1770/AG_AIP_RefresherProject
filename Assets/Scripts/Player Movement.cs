@@ -31,12 +31,16 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        OnGround();
+        //OnGround();
         animator.SetBool("isRunning", movementVector.magnitude > 0);
         transform.forward = movementVector.normalized;
+        animator.SetBool("onGround", IsOnGround());
     }
     public void OnGround()
     {
+        //if (rb.linearVelocity.y > 0)
+        //    return;
+
         RaycastHit hit;
         if (Physics.Raycast(playerTransform.position + (Vector3.down), Vector3.down, out hit, 1))
         {
@@ -46,7 +50,7 @@ public class PlayerMovement : MonoBehaviour
                 grounded = true;
                 animator.SetBool("onGround", grounded);
             }
-            else //if (hit.transform.gameObject.tag != "Ground")
+            else if (hit.transform.gameObject.tag != "Ground")
             {
                 Debug.DrawRay(playerTransform.position + (Vector3.down), Vector3.down, Color.red, 1);
                 grounded = false;
@@ -55,6 +59,22 @@ public class PlayerMovement : MonoBehaviour
 
         }
     }
+
+    public bool IsOnGround()
+    {
+        RaycastHit hit;
+        if (Physics.Raycast(playerTransform.position + (Vector3.down), Vector3.down, out hit, 1))
+        {
+            if (hit.transform.gameObject.tag == "Ground")
+            {
+                return true;
+            }
+        }
+
+
+            return false;
+    }
+
     public void OnJump(InputAction.CallbackContext ctx)
     {
         animator.SetTrigger("isJump");
